@@ -127,7 +127,7 @@ class ParExp():
             self.addable = True
         if self.pool is None:
             self.pool = multiprocessing.Pool(self.procNum, init_worker)
-        expName = '_'.join([self.getTimeStamp(), str(func)] + [i + 'EQ' + str(argsMap[i]) for i in argsMap])
+        expName = '_'.join([self.getTimeStamp(), str(func)] + [i + '=' + str(argsMap[i]) for i in argsMap])
         expName = re.sub('<(function |)', '', expName)
         expName = re.sub(' (instance |object |)at(\d|\w| )+>', '', expName)
         expName = re.sub('[\%\/\<\>\^\|\?\&\#\*\\\:\" \n]', '', expName)
@@ -144,6 +144,7 @@ class ParExp():
             while(not all(map(lambda x: x.ready(), self.helperReturn))):
                 time.sleep(1)
                 map(lambda x: str(x.extract()), self.logExtractors)
+            map(lambda x: str(x.extract()), self.logExtractors)
         except KeyboardInterrupt:
             print "Keyboard Interrupted by User."
             self.pool.terminate()
