@@ -121,7 +121,7 @@ class ParExp():
         return datetime.now().strftime('%Y%m%d_%H%M%S')
     def getExtractedInfo(self):
         return self.extractedInfo
-    def add(self, func, argsMap):
+    def add(self, func, argsMap, passExpNameVar = None):
         if not self.addable:
             self.reset()
             self.addable = True
@@ -132,6 +132,7 @@ class ParExp():
         expName = re.sub(' (instance |object |)at(\d|\w| )+>', '', expName)
         expName = re.sub('[\%\/\<\>\^\|\?\&\#\*\\\:\" \n]', '', expName)
         self.expNames.append(expName)
+        if passExpNameVar is not None: argsMap[passExpNameVar] = expName
         for extractor in self.logExtractors:
             extractor.addExpInfo(expName, os.path.join(self.logFolder, expName + '.log'))
         self.helperReturn.append(self.pool.apply_async(_RunFuncHelper, (func, argsMap, expName, self.logFolder)))
@@ -156,9 +157,9 @@ class ParExp():
             rert = map(lambda x:x.get(), self.helperReturn)
             self.results = rert
             self.extractedInfo = map(lambda x: x.getExtractedLog(), self.logExtractors)
-    def map(self, func, parLst):
+    def map(self, func, parLst, passExpNameVar = None):
         for par in parLst:
-            self.add(func, par)
+            self.add(func, par, passExpNameVar)
         self.join()
     def getResults(self):
         return self.results

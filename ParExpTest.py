@@ -13,6 +13,9 @@ def runcmd(par):
     print ocmd
     subprocess.call(ocmd, stdout = sys.stdout, stderr = sys.stderr)
     return par
+def haveExpName(par, myExpName):
+    print "The exp name is: ", myExpName
+    return myExpName
 class ParExpTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,6 +25,8 @@ class ParExpTest(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.logDir, ignore_errors=True)
         print "exit.."
+    def setUp(self):
+        print "In method: ", self._testMethodName
     def testBasic(self):
         pe = ParExp(10, self.logDir)
         pe.map(worker1, [{"par": 1}, {"par": 2}, {"par": 3}])
@@ -87,5 +92,12 @@ class ParExpTest(unittest.TestCase):
         self.assertTrue(all(map(lambda x: "test str\nnext line!" in x, content)))
         self.assertTrue(all(map(lambda x: "cat" in x, content)))
         self.assertTrue(all(map(lambda x: fileName in x, content)))
+    def testExpNamePar(self):
+        pe = ParExp(10, self.logDir)
+        logFileName = os.path.join(self.logDir, "test_" + str(uuid.uuid1()) + ".log")
+        pe.addExtractor("The exp name is: .+", open(logFileName, "a+"))
+        pe.map(haveExpName, [{"par": 1}, {"par": 2}, {"par": 3}], passExpNameVar = "myExpName")
+        logContent = open(logFileName, "r").read()
+        self.assertTrue(all(map(lambda x: x in logContent, pe.expNames)))
 if __name__ == '__main__':
     unittest.main()
